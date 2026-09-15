@@ -1,0 +1,79 @@
+name: New card report
+description: Report whether this works (or doesn't) on a Lenovo OEM card that isn't listed yet
+title: "[card] "
+labels: ["hardware-report"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks — this is the most useful thing you can contribute.
+
+        **Please only run the tool against a Lenovo OEM card.** Writing to an
+        unknown I2C device on a non-Lenovo card is a good way to find out what
+        else lives on that bus.
+
+  - type: input
+    id: card
+    attributes:
+      label: Card
+      placeholder: "e.g. RTX 4070 Ti, Lenovo OEM, from a Legion Tower 7 Gen 8"
+    validations:
+      required: true
+
+  - type: input
+    id: system
+    attributes:
+      label: System it came from / is in now
+      placeholder: "e.g. pulled from Legion Tower 5 Gen 10, now in a custom B650 build"
+    validations:
+      required: true
+
+  - type: textarea
+    id: info
+    attributes:
+      label: Output of --info
+      description: "`py -3 tool/legion_gpu_rgb.py --info`"
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: probe
+    attributes:
+      label: Output of --probe
+      description: "`py -3 tool/legion_gpu_rgb.py --probe`"
+      render: text
+    validations:
+      required: true
+
+  - type: dropdown
+    id: result
+    attributes:
+      label: What happened
+      options:
+        - Works — colour, brightness and logo all respond
+        - Partly works — some controls respond
+        - Detected but nothing lights up
+        - Not detected at all
+        - Something went wrong (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: detail
+    attributes:
+      label: Details
+      description: >
+        Which commands you ran and what the lighting actually did. If only some
+        controls worked, say which. If a colour applied once and then stopped
+        responding, say so — that's a known symptom pattern worth tracking.
+    validations:
+      required: true
+
+  - type: input
+    id: lenovo_sw
+    attributes:
+      label: Lenovo software state
+      placeholder: "e.g. Legion Space not installed / installed but closed / running"
+    validations:
+      required: true
