@@ -3,6 +3,7 @@
 RGB lighting control for **Lenovo OEM NVIDIA graphics cards**, with no Lenovo
 software and no Lenovo motherboard.
 
+AI helped me fix this issue that I was having personally. It fixed it, and I just made this public here incase someone can use it. ENJOY!!!
 If you pulled a GPU out of a Legion prebuilt and put it in your own build, its
 lighting almost certainly stopped working. Legion Space only runs on Lenovo
 systems, and OpenRGB cannot see the controller either. This project makes the
