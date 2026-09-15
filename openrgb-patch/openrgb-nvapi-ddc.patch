@@ -1,0 +1,85 @@
+diff --git a/i2c_smbus/Windows/i2c_smbus_nvapi.cpp b/i2c_smbus/Windows/i2c_smbus_nvapi.cpp
+index eb5f7c0..318d49f 100644
+--- a/i2c_smbus/Windows/i2c_smbus_nvapi.cpp
++++ b/i2c_smbus/Windows/i2c_smbus_nvapi.cpp
+@@ -11,9 +11,10 @@
+ 
+ #include "i2c_smbus_nvapi.h"
+ 
+-i2c_smbus_nvapi::i2c_smbus_nvapi(NV_PHYSICAL_GPU_HANDLE handle)
++i2c_smbus_nvapi::i2c_smbus_nvapi(NV_PHYSICAL_GPU_HANDLE handle, bool use_ddc_port)
+ {
+-    this->handle = handle;
++    this->handle       = handle;
++    this->use_ddc_port = use_ddc_port;
+ }
+ 
+ s32 i2c_smbus_nvapi::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int mode, i2c_smbus_data* data)
+@@ -34,7 +35,7 @@ s32 i2c_smbus_nvapi::i2c_smbus_xfer(u8 addr, char read_write, u8 command, int mo
+ 	i2c_data.size = 0;
+ 
+     // Always use GPU port 1 - this is where RGB controllers are attached
+-	i2c_data.is_ddc_port = 0;
++	i2c_data.is_ddc_port = use_ddc_port ? 1 : 0;
+     i2c_data.port_id = 1;
+ 	i2c_data.is_port_id_set = 1;
+ 
+@@ -135,7 +136,7 @@ s32 i2c_smbus_nvapi::i2c_xfer(u8 addr, char read_write, int* size, u8* data)
+ 	i2c_data.size = *size;
+ 
+     // Always use GPU port 1 - this is where RGB controllers are attached
+-	i2c_data.is_ddc_port = 0;
++	i2c_data.is_ddc_port = use_ddc_port ? 1 : 0;
+     i2c_data.port_id = 1;
+ 	i2c_data.is_port_id_set = 1;
+ 
+@@ -180,9 +181,13 @@ bool i2c_smbus_nvapi_detect()
+ 
+     for(NV_S32 gpu_idx = 0; gpu_idx < gpu_count; gpu_idx++)
+     {
+-        i2c_smbus_nvapi * nvapi_bus = new i2c_smbus_nvapi(gpu_handles[gpu_idx]);
++        for(int ddc_idx = 0; ddc_idx < 2; ddc_idx++)
++        {
++        bool use_ddc = (ddc_idx == 1);
++
++        i2c_smbus_nvapi * nvapi_bus = new i2c_smbus_nvapi(gpu_handles[gpu_idx], use_ddc);
+ 
+-        snprintf(nvapi_bus->info.device_name, 512, "Nvidia NvAPI I2C on GPU %d", gpu_idx);
++        snprintf(nvapi_bus->info.device_name, 512, "Nvidia NvAPI I2C on GPU %d%s", gpu_idx, use_ddc ? " (DDC)" : "");
+ 
+         res = NvAPI_GPU_GetPCIIdentifiers(gpu_handles[gpu_idx], &device_id, &sub_system_id, &revision_id, &ext_device_id);
+ 
+@@ -196,6 +201,7 @@ bool i2c_smbus_nvapi_detect()
+         }
+ 
+         DetectionManager::get()->RegisterI2CBus(nvapi_bus);
++        }
+     }
+ 
+     return(true);
+diff --git a/i2c_smbus/Windows/i2c_smbus_nvapi.h b/i2c_smbus/Windows/i2c_smbus_nvapi.h
+index 78586b7..5b9e750 100644
+--- a/i2c_smbus/Windows/i2c_smbus_nvapi.h
++++ b/i2c_smbus/Windows/i2c_smbus_nvapi.h
+@@ -17,7 +17,7 @@
+ class i2c_smbus_nvapi : public i2c_smbus_interface
+ {
+ public:
+-    i2c_smbus_nvapi(NV_PHYSICAL_GPU_HANDLE handle);
++    i2c_smbus_nvapi(NV_PHYSICAL_GPU_HANDLE handle, bool use_ddc_port = false);
+     s32 i2c_read_block_data(u8 addr, u8 length, u8 *values);
+     s32 i2c_write_block_data(u8 addr, u8 length, u8 *values);
+ 
+@@ -25,4 +25,12 @@ private:
+     s32 i2c_smbus_xfer(u8 addr, char read_write, u8 command, int mode, i2c_smbus_data* data);
+     s32 i2c_xfer(u8 addr, char read_write, int* size, u8* data);
+     NV_PHYSICAL_GPU_HANDLE handle;
++
++    /*-------------------------------------------------------------*\
++    | Some OEM boards put the RGB controller on the DDC side of the |
++    | NvAPI I2C bus. is_ddc_port was hardcoded to 0, making those   |
++    | controllers unreachable. Selectable now; a second bus per GPU |
++    | is registered with it set, leaving the existing bus untouched.|
++    \*-------------------------------------------------------------*/
++    bool use_ddc_port;
+ };
