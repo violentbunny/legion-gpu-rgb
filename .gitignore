@@ -1,0 +1,35 @@
+# Qt / qmake build output
+Makefile
+Makefile.Debug
+Makefile.Release
+*.pro.user
+debug/
+release/
+object_script.*
+.qmake.stash
+
+# build artefacts
+*.obj
+*.o
+*.dll
+*.lib
+*.exp
+*.pdb
+*.ilk
+moc_*.cpp
+moc_*.h
+*.moc
+
+# python
+__pycache__/
+*.pyc
+
+# capture / diagnostic output - never commit these, they contain machine paths
+*.log
+captures/
+
+# editors / os
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
