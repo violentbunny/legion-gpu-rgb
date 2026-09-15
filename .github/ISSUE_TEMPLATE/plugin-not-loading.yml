@@ -1,0 +1,76 @@
+name: OpenRGB plugin not loading
+description: The DLL is in the plugins folder but no device appears
+title: "[plugin] "
+labels: ["plugin"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **Read this first — it is the answer about 90% of the time.**
+
+        Qt plugins are ABI-coupled to the host application. If the Qt version or
+        the plugin API version doesn't match your OpenRGB build exactly, OpenRGB
+        **ignores the DLL silently** — no error, no log line, no device.
+
+        The current build targets **OpenRGB 1.0rc3 / plugin API 4 / Qt 5.15.0 /
+        MSVC**. Post-rc3 master is plugin API 5 and needs porting.
+
+        Also check: are you running OpenRGB **as administrator**? I2C access
+        requires it.
+
+  - type: input
+    id: openrgb_version
+    attributes:
+      label: OpenRGB version
+      description: "Help → About, or the App Information section"
+      placeholder: "e.g. 0.9+ (1.0rc3)"
+    validations:
+      required: true
+
+  - type: input
+    id: qt_version
+    attributes:
+      label: Qt version used by your OpenRGB
+      description: >
+        File version of Qt5Core.dll (or Qt6Core.dll) in OpenRGB's install
+        folder. In PowerShell:
+        `(Get-Item "C:\path\to\OpenRGB\Qt5Core.dll").VersionInfo.FileVersion`
+      placeholder: "e.g. 5.15.0.0"
+    validations:
+      required: true
+
+  - type: input
+    id: plugin_api
+    attributes:
+      label: Plugin API version
+      description: >
+        `OPENRGB_PLUGIN_API_VERSION` in OpenRGBPluginInterface.h in your OpenRGB
+        source tree. Leave blank if you installed a prebuilt OpenRGB.
+      placeholder: "e.g. 4"
+
+  - type: dropdown
+    id: source
+    attributes:
+      label: Where the DLL came from
+      options:
+        - Downloaded from Releases
+        - Built it myself with MSVC
+        - Built it myself with MinGW
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: OpenRGB is running as administrator
+        - label: The DLL is in %APPDATA%\OpenRGB\plugins\
+        - label: Legion Space is closed (or not installed)
+        - label: The standalone tool (tool/legion_gpu_rgb.py) does work on this machine
+
+  - type: textarea
+    id: detail
+    attributes:
+      label: Anything else
+      description: Build errors, OpenRGB log output, what the Plugins tab shows.
